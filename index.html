@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mini Roleta Telegram</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding: 20px;
+  }
+  #wheel {
+    margin: 20px auto;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    border: 10px solid #333;
+    position: relative;
+    overflow: hidden;
+  }
+  #wheel canvas {
+    width: 100%;
+    height: 100%;
+  }
+  #spinButton {
+    margin-top: 20px;
+    padding: 15px 30px;
+    font-size: 18px;
+    cursor: pointer;
+  }
+  #result {
+    margin-top: 20px;
+    font-size: 20px;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+
+<h1>🎰 Mini Roleta Telegram</h1>
+
+<div id="wheel"></div>
+
+<button id="spinButton">Girar Roleta</button>
+
+<div id="result"></div>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+  // Inicializa a API Telegram WebApp
+  const tg = window.Telegram.WebApp;
+
+  // Define os setores da roleta e suas probabilidades
+  const sectors = [
+    { label: "Prêmio Máximo", color: "#f44336", chance: 3 },
+    { label: "Prêmio Médio", color: "#ff9800", chance: 20 },
+    { label: "Sem Prêmio", color: "#9e9e9e", chance: 77 }
+  ];
+
+  const wheelSize = 300;
+  const canvas = document.createElement('canvas');
+  canvas.width = wheelSize;
+  canvas.height = wheelSize;
+  document.getElementById('wheel').appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+
+  // Desenha a roleta
+  function drawWheel() {
+    let startAngle = 0;
+    sectors.forEach(sector => {
+      const sectorAngle = (sector.chance / 100) * 2 * Math.PI;
+      ctx.beginPath();
+      ctx.moveTo(wheelSize / 2, wheelSize / 2);
+      ctx.arc(wheelSize / 2, wheelSize / 2, wheelSize / 2, startAngle, startAngle + sectorAngle);
+      ctx.fillStyle = sector.color;
+      ctx.fill();
+      ctx.stroke();
+
+      // Texto do setor
+      ctx.save();
+      ctx.translate(wheelSize / 2, wheelSize / 2);
+      ctx.rotate(startAngle + sectorAngle / 2);
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 16px Arial";
+      ctx.fillText(sector.label, wheelSize / 2 - 10, 10);
+      ctx.restore();
+
+      startAngle += sectorAngle;
+    });
+  }
+
+  drawWheel();
+
+  // Função para escolher o setor baseado nas probabilidades
+  function spinWheel() {
+    const rand = Math.random() * 100;
+    let cumulative = 0;
+    for (let sector of sectors) {
+      cumulative += sector.chance;
+      if (rand <= cumulative) {
+        return sector.label;
+      }
+    }
+    return sectors[sectors.length - 1].label;
+  }
+
+  const spinButton = document.getElementById('spinButton');
+  const resultDiv = document.getElementById('result');
+
+  spinButton.onclick = () => {
+    spinButton.disabled = true;
+    resultDiv.textContent = "Girando... 🎡";
+
+    // Simula animação simples com timeout
+    setTimeout(() => {
+      const prize = spinWheel();
+      resultDiv.textContent = `🎉 Resultado: ${prize}`;
+
+      // Envia dados para o bot via Telegram WebApp API
+      tg.sendData(JSON.stringify({ action: "spin", prize }));
+
+      spinButton.disabled = false;
+    }, 2000);
+  };
+</script>
+
+</body>
+</html>
