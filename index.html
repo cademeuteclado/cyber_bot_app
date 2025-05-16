@@ -1,71 +1,18 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Mini Roleta Telegram</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-    padding: 20px;
-  }
-  #spinButton {
-    margin-top: 20px;
-    padding: 15px 30px;
-    font-size: 18px;
-    cursor: pointer;
-  }
-  #result {
-    margin-top: 20px;
-    font-size: 20px;
-    font-weight: bold;
-  }
-</style>
-</head>
+<html>
+<head><meta charset="utf-8"><title>Mini‑Game</title></head>
 <body>
-
-<h1>🎰 Mini Roleta Telegram</h1>
-
-<button id="spinButton">Girar Roleta</button>
-
-<div id="result"></div>
-
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script>
-  const tg = window.Telegram.WebApp;
-  const spinButton = document.getElementById('spinButton');
-  const resultDiv = document.getElementById('result');
-
-  // Função para escolher o prêmio baseado nas probabilidades
-  function spinPrize() {
-    const rand = Math.random() * 100;
-    if (rand <= 3) {
-      return "Prêmio Máximo";
-    } else if (rand <= 23) { // 3 + 20
-      return "Prêmio Médio";
-    } else {
-      return "Sem Prêmio";
-    }
-  }
-
-  spinButton.onclick = () => {
-    spinButton.disabled = true;
-    resultDiv.textContent = "Girando... 🎡";
-
-    setTimeout(() => {
-      const prize = spinPrize();
-      resultDiv.textContent = `🎉 Resultado: ${prize}`;
-
-      // Envia os dados para o bot via Telegram WebApp API
-      const dataToSend = { action: "spin", prize: prize };
-      console.log("Enviando dados para o bot:", dataToSend);
-      tg.sendData(JSON.stringify(dataToSend));
-
-      spinButton.disabled = false;
-    }, 2000);
-  };
-</script>
-
+  <h1>Gire para ganhar um login grátis!</h1>
+  <button id="spin">Girar 🎰</button>
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    document.getElementById('spin').addEventListener('click', () => {
+      // lógica simples de sorteio
+      const won = Math.random() < 0.2;  // 20% de chance
+      tg.sendData(JSON.stringify({ won }));
+      tg.close();
+    });
+  </script>
 </body>
 </html>
