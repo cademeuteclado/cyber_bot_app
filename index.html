@@ -1,18 +1,65 @@
 <!DOCTYPE html>
 <html>
-<head><meta charset="utf-8"><title>Mini‑Game</title></head>
+<head>
+    <meta charset="utf-8">
+    <title>Mini‑Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 16px;
+            cursor: pointer;
+            background: #0088cc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
 <body>
-  <h1>Gire para ganhar um login grátis!</h1>
-  <button id="spin">Girar 🎰</button>
-  <script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
-    document.getElementById('spin').addEventListener('click', () => {
-      // lógica simples de sorteio
-      const won = Math.random() < 0.2;  // 20% de chance
-      tg.sendData(JSON.stringify({ won }));
-      tg.close();
-    });
-  </script>
+    <h1>Gire para ganhar um login grátis! 🎰</h1>
+    <button id="spin">Girar Roleta</button>
+    <div id="result"></div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        
+        document.getElementById('spin').addEventListener('click', async () => {
+            const spinButton = document.getElementById('spin');
+            const resultDiv = document.getElementById('result');
+            
+            spinButton.disabled = true;
+            resultDiv.textContent = "Girando... 🎡";
+            
+            // Simula animação
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Sorteio (20% de chance)
+            const won = Math.random() < 0.2;
+            
+            // Feedback visual
+            if(won) {
+                resultDiv.textContent = "🎉 Parabéns! Você ganhou!";
+                resultDiv.style.color = "green";
+            } else {
+                resultDiv.textContent = "😢 Não foi dessa vez...";
+                resultDiv.style.color = "red";
+            }
+            
+            // Envia dados para o bot
+            tg.sendData(JSON.stringify({ won }));
+            
+            spinButton.disabled = false;
+        });
+    </script>
 </body>
 </html>
