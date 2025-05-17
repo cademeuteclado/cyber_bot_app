@@ -1,27 +1,154 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-    <meta charset="utf-8">
-    <title>Roleta Cyber</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Roleta Cyber</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 40px;
+      background: #121212;
+      color: #fff;
+    }
+    h1 {
+      margin-bottom: 30px;
+    }
+    #roleta {
+      margin: 0 auto 30px;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      border: 6px solid #00ff99;
+      background: conic-gradient(
+        #00ff99 0deg 60deg,
+        #009966 60deg 120deg,
+        #00cc66 120deg 180deg,
+        #009966 180deg 240deg,
+        #00ff99 240deg 300deg,
+        #009966 300deg 360deg
+      );
+      position: relative;
+      cursor: pointer;
+      transition: transform 4s cubic-bezier(0.33, 1, 0.68, 1);
+      box-shadow: 0 0 15px #00ff99;
+    }
+    #pointer {
+      width: 0; 
+      height: 0; 
+      border-left: 20px solid transparent;
+      border-right: 20px solid transparent;
+      border-bottom: 30px solid #ff3300;
+      margin: 0 auto 20px;
+    }
+    #result {
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 20px;
+      min-height: 30px;
+    }
+    #spin {
+      background: #00ff99;
+      border: none;
+      padding: 15px 40px;
+      font-size: 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #121212;
+      font-weight: bold;
+      box-shadow: 0 0 10px #00ff99;
+      transition: background 0.3s ease;
+    }
+    #spin:disabled {
+      background: #444;
+      cursor: not-allowed;
+      box-shadow: none;
+      color: #999;
+    }
+  </style>
 </head>
 <body>
-    <div class="roleta" id="roleta"></div>
-    
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script>
-        const tg = window.Telegram.WebApp;
-        
-        document.getElementById('roleta').addEventListener('click', () => {
-            // Sua lógica de roleta aqui
-            const premios = ["VIP 1 Dia", "Sem prêmio", "50% OFF"];
-            const premio = premios[Math.floor(Math.random() * premios.length)];
-            
-            tg.sendData(JSON.stringify({
-                premio: premio,
-                web_app_query_id: tg.initDataUnsafe.query_id
-            }));
-        });
-    </script>
+  <h1>🎰 Gire a Roleta e Ganhe Prêmios!</h1>
+  <div id="pointer"></div>
+  <div id="roleta"></div>
+  <button id="spin">Girar Roleta</button>
+  <div id="result"></div>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    const roleta = document.getElementById('roleta');
+    const spinBtn = document.getElementById('spin');
+    const resultDiv = document.getElementById('result');
+
+    // Prêmios e seus ângulos na roleta (em graus)
+    const premios = [
+      { name: "VIP 1 Dia", angleStart: 0, angleEnd: 60 },
+      { name: "Sem prêmio", angleStart: 60, angleEnd: 120 },
+      { name: "50% OFF", angleStart: 120, angleEnd: 180 },
+      { name: "VIP 3 Dias", angleStart: 180, angleEnd: 240 },
+      { name: "Sem prêmio", angleStart: 240, angleEnd: 300 },
+      { name: "VIP 7 Dias", angleStart: 300, angleEnd: 360 }
+    ];
+
+    // Função para escolher prêmio aleatório baseado em probabilidades
+    function escolherPremio() {
+      const rand = Math.random() * 100;
+      if (rand <= 10) return "VIP 7 Dias";       // 10%
+      else if (rand <= 25) return "VIP 3 Dias";  // 15%
+      else if (rand <= 40) return "VIP 1 Dia";   // 15%
+      else if (rand <= 60) return "50% OFF";     // 20%
+      else return "Sem prêmio";                   // 40%
+    }
+
+    // Função para obter ângulo do prêmio
+    function anguloDoPremio(nome) {
+      const premio = premios.find(p => p.name === nome);
+      if (!premio) return 0;
+      // Retorna o meio do segmento para girar a roleta
+      return (premio.angleStart + premio.angleEnd) / 2;
+    }
+
+    spinBtn.addEventListener('click', () => {
+      spinBtn.disabled = true;
+      resultDiv.textContent = "Girando... 🎡";
+
+      const premio = escolherPremio();
+      const angulo = anguloDoPremio(premio);
+
+      // Gira a roleta: 5 voltas completas + ângulo do prêmio
+      const totalGiro = 360 * 5 + (360 - angulo);
+
+      roleta.style.transition = 'transform 4s cubic-bezier(0.33, 1, 0.68, 1)';
+      roleta.style.transform = `rotate(${totalGiro}deg)`;
+
+      // Após animação, envia dados para o bot e mostra resultado
+      setTimeout(() => {
+        // Envia dados para o bot com web_app_query_id
+        const dataToSend = {
+          premio,
+          web_app_query_id: tg.initDataUnsafe?.query_id || null
+        };
+        tg.sendData(JSON.stringify(dataToSend));
+
+        // Mostra resultado
+        if (premio === "Sem prêmio") {
+          resultDiv.textContent = "😢 Não foi dessa vez...";
+          resultDiv.style.color = "#ff4444";
+        } else {
+          resultDiv.textContent = `🎉 Você ganhou: ${premio}!`;
+          resultDiv.style.color = "#00ff99";
+        }
+
+        spinBtn.disabled = false;
+        // Reset roleta para próxima rodada
+        roleta.style.transition = 'none';
+        roleta.style.transform = `rotate(${360 - angulo}deg)`;
+      }, 4000);
+    });
+  </script>
 </body>
 </html>
