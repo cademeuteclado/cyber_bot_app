@@ -2,61 +2,23 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Teste Botão</title>
+  <title>Teste WebApp</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: sans-serif;
-    }
-    #btn {
-      padding: 1rem 2rem;
-      font-size: 1.2rem;
-      border: none;
-      border-radius: 0.5rem;
-      cursor: pointer;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      transition: transform 0.1s;
-    }
-    #btn:active {
-      transform: scale(0.95);
-    }
+    html, body { height:100%; margin:0; display:flex; align-items:center; justify-content:center; font-family:sans-serif; }
+    #btn { padding:1rem 2rem; font-size:1.2rem; border:none; border-radius:.5rem; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.2); transition:transform .1s; }
+    #btn:active { transform:scale(.95); }
   </style>
 </head>
 <body>
   <button id="btn">Registrar Ação</button>
-
   <script>
+    const tg = window.Telegram.WebApp;
     const btn = document.getElementById('btn');
-    // Se estiver rodando como WebApp do Telegram:
-    const tg = window.Telegram?.WebApp;
 
-    btn.addEventListener('click', async () => {
-      const payload = {
-        user_id: tg?.initDataUnsafe?.user?.id || 0,
-        acao: 'Teste de clique'
-      };
-
-      // Comunica o WebApp (caso haja)
-      if (tg) {
-        tg.sendData(JSON.stringify(payload));
-      }
-
-      // Envia ao seu back‑end
-      try {
-        const res = await fetch('/acao', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify(payload)
-        });
-        const text = await res.text();
-        alert('Resposta: ' + text);
-      } catch (e) {
-        alert('Erro ao registrar: ' + e);
-      }
+    btn.addEventListener('click', () => {
+      const payload = { user_id: tg.initDataUnsafe.user.id, acao: 'Clique Teste' };
+      tg.sendData(JSON.stringify(payload));  // envia direto ao bot sem passar pelo servidor estático
     });
   </script>
 </body>
